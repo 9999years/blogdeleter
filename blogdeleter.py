@@ -31,7 +31,11 @@ def makepayload(form, user_keys={}):
 
 def post_form(sess, url, form={}, payload={}):
     pg = sess.get(url)
+    if not pg.ok:
+        return pg
     form = BeautifulSoup(pg.text, 'html.parser').find(**form)
+    if form == None:
+        raise ValueError('No form found on page!')
     payload = makepayload(form, payload)
     act = form['action']
     if (not act.startswith('http://')
@@ -59,7 +63,7 @@ def delete(url, creds, session):
     )
 
 def setup(credfile='creds.json'):
-    global sess
+    global sess, logged_in
     resp = login(getcreds(credfile), sess)
     if resp.ok:
         logged_in = True
@@ -74,13 +78,12 @@ def easy_delete(url):
 def main():
     parser = argparse.ArgumentParser(description='Deletes a Tumblr blog')
 
-    parser.add_argument('url', type='str', help='The url of the blog to delete')
+    parser.add_argument('url', help='The url of the blog to delete')
 
-    parser.add_argument('-l', '--log-file', type='str', default='result.html',
+    parser.add_argument('-l', '--log-file', default='result.html',
             help='Filename to print result HTML to if deleting fails. Default: result.html'
             )
-    parser.add_argument('-c', '--credential-file', type='str',
-        default='creds.json',
+    parser.add_argument('-c', '--credential-file', default='creds.json',
         help='Filename of a credential file; Must be a JSON file containing an `email` key and a `password` key. Default: creds.json')
 
     args = parser.parse_args()
@@ -89,7 +92,8 @@ def main():
     if not login.ok:
         print('login failure!', file=sys.stderr)
         return
-    print(f'Deleting {args.url}... ', end='')
+    print(f'Deleting {args.url}... ', end='', file=sys.stdout)
+    sys.stdout.flush()
     resp = easy_delete(args.url)
     if resp.ok:
         print('success!')
