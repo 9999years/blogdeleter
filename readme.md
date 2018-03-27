@@ -24,6 +24,11 @@ It does need your password. `creds.json` should look like:
         "password": "example"
     }
 
+There’s a high chance of using this logging you out on the device you run it on
+or maybe other devices. I don’t know. I deleted 100+ blogs with this as fast as
+the requests would complete and it worked fine, I didn’t get rate-limited or
+anything. But your experience may vary. Good luck!
+
 There’s also a script `delete_many.ps1` to delete a bunch of URLs at once from a
 file. `blogdeleter.py` needs to log in again for every URL so this is a bad
 solution.
